@@ -1,0 +1,6 @@
+{
+  "name": "StitchMate ERP & Customer Portal",
+  "description": "Comprehensive tailoring, bespoke suiting & garment management ERP with digital measurement book, production workflow, fabric inventory, invoicing, and customer tracking portal.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
