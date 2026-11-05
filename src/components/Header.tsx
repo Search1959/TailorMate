@@ -9,7 +9,7 @@ import {
   Calendar,
   ExternalLink,
 } from 'lucide-react';
-import { BusinessProfile } from '../types';
+import { AuthUser, BusinessProfile } from '../types';
 
 interface HeaderProps {
   currentTab: string;
@@ -20,6 +20,8 @@ interface HeaderProps {
   darkMode: boolean;
   setDarkMode: (val: boolean) => void;
   onToggleMobileMenu: () => void;
+  currentUser?: AuthUser | null;
+  onOpenAuthDemo?: () => void;
 }
 
 const TAB_TITLES: Record<string, string> = {
@@ -41,6 +43,8 @@ export const Header: React.FC<HeaderProps> = ({
   darkMode,
   setDarkMode,
   onToggleMobileMenu,
+  currentUser,
+  onOpenAuthDemo,
 }) => {
   const pageTitle = isCustomerPortalActive
     ? 'Customer Tracking Portal'
@@ -90,6 +94,19 @@ export const Header: React.FC<HeaderProps> = ({
               </div>
             ) : (
               <>
+                {/* Deinrim Demo / Auth quick button */}
+                {onOpenAuthDemo && (
+                  <button
+                    onClick={onOpenAuthDemo}
+                    className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-amber-800 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/50 hover:bg-amber-100 dark:hover:bg-amber-900/50 border border-amber-200 dark:border-amber-800 rounded-lg transition-colors whitespace-nowrap"
+                    title="Switch Demo Role or View Deinrim Auth Page"
+                  >
+                    <Scissors className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />
+                    <span className="hidden sm:inline">Demo Portal</span>
+                    <span className="sm:hidden">Demo</span>
+                  </button>
+                )}
+
                 <button
                   onClick={() => setIsCustomerPortalActive(true)}
                   className="hidden md:flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg transition-colors whitespace-nowrap"

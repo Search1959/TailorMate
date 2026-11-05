@@ -14,8 +14,12 @@ import {
   Sun,
   Store,
   X,
+  Shield,
+  Briefcase,
+  User,
+  LogOut,
 } from 'lucide-react';
-import { BusinessProfile } from '../types';
+import { AuthUser, BusinessProfile } from '../types';
 
 interface SidebarProps {
   currentTab: string;
@@ -32,6 +36,8 @@ interface SidebarProps {
   mobileOpen: boolean;
   setMobileOpen: (open: boolean) => void;
   orderCount?: number;
+  currentUser?: AuthUser | null;
+  onOpenAuthDemo?: () => void;
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({
@@ -49,6 +55,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
   mobileOpen,
   setMobileOpen,
   orderCount = 8,
+  currentUser,
+  onOpenAuthDemo,
 }) => {
   const navItems = [
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
@@ -233,8 +241,50 @@ export const Sidebar: React.FC<SidebarProps> = ({
             </select>
           </div>
 
+          {/* Active User Card & Demo Switcher */}
+          {currentUser && (
+            <div className="pt-2 border-t border-slate-100 dark:border-slate-800">
+              <div className="flex items-center justify-between p-2 rounded-lg bg-slate-50 dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700/80">
+                <div className="flex items-center gap-2 min-w-0">
+                  <div className="w-7 h-7 rounded-full bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 flex items-center justify-center shrink-0">
+                    {currentUser.role === 'admin' ? (
+                      <Shield className="w-3.5 h-3.5" />
+                    ) : currentUser.role === 'manager' ? (
+                      <Briefcase className="w-3.5 h-3.5" />
+                    ) : currentUser.role === 'tailor' ? (
+                      <Scissors className="w-3.5 h-3.5" />
+                    ) : (
+                      <User className="w-3.5 h-3.5" />
+                    )}
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-xs font-semibold text-slate-800 dark:text-slate-100 truncate">
+                      {currentUser.name.split(' ')[0]}
+                    </p>
+                    <p className="text-[10px] text-slate-400 capitalize truncate">
+                      {currentUser.role}
+                    </p>
+                  </div>
+                </div>
+
+                {onOpenAuthDemo && (
+                  <button
+                    onClick={() => {
+                      onOpenAuthDemo();
+                      setMobileOpen(false);
+                    }}
+                    title="Switch Demo Persona or Sign Out"
+                    className="p-1.5 text-slate-400 hover:text-red-500 rounded-md hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
+                  >
+                    <LogOut className="w-3.5 h-3.5" />
+                  </button>
+                )}
+              </div>
+            </div>
+          )}
+
           {/* Theme & Profile Footer */}
-          <div className="pt-2 flex items-center justify-between text-xs text-slate-500">
+          <div className="pt-1 flex items-center justify-between text-xs text-slate-500">
             <span className="text-[11px] font-mono">{businessTypeLabel(currentBusiness.businessType)}</span>
             <button
               onClick={() => setDarkMode(!darkMode)}

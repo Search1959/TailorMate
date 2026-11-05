@@ -242,3 +242,15 @@ export interface WhatsAppTemplate {
     trackingUrl: string;
   }) => string;
 }
+
+export interface AuthUser {
+  id: string;
+  name: string;
+  email: string;
+  role: 'admin' | 'manager' | 'tailor' | 'customer';
+  roleTitle: string;
+  avatarUrl?: string;
+  isDemoUser: boolean;
+  tailorStaffId?: string;
+  customerTrackingCode?: string;
+}

@@ -25,7 +25,10 @@ import { EditTailorModal } from './components/modals/EditTailorModal';
 import { ConfirmDeleteModal } from './components/modals/ConfirmDeleteModal';
 
 import { StorageService } from './services/storage';
+import { BoutiqueAuthPage } from './components/auth/BoutiqueAuthPage';
+import { LiveDemoBar } from './components/auth/LiveDemoBar';
 import {
+  AuthUser,
   BusinessProfile,
   Customer,
   Fabric,
@@ -41,6 +44,41 @@ export default function App() {
   // Theme state
   const [darkMode, setDarkMode] = useState<boolean>(() => {
     return localStorage.getItem('stitchmate_dark_mode') === 'true';
+  });
+
+  // Authentication & Demo Portal State (matches deinrimapp.in/boutique/index.php?r=auth/login&tab=demo)
+  const [currentUser, setCurrentUser] = useState<AuthUser | null>(() => {
+    try {
+      const urlParams = new URLSearchParams(window.location.search);
+      const tabParam = urlParams.get('tab');
+      const rParam = urlParams.get('r');
+      // If URL explicitly requests demo or login auth page, show auth page directly
+      if (tabParam === 'demo' || (rParam && rParam.includes('auth/login'))) {
+        return null;
+      }
+      const saved = localStorage.getItem('stitchmate_current_user');
+      if (saved) return JSON.parse(saved);
+    } catch (e) {
+      // fallback
+    }
+    // Default to pre-authenticated Administrator demo user
+    return {
+      id: 'demo_admin',
+      name: 'Devendra Kumar (Proprietor)',
+      email: 'admin@deinrimapp.in',
+      role: 'admin',
+      roleTitle: 'Boutique Administrator & Owner',
+      isDemoUser: true,
+    };
+  });
+
+  const [authInitialTab, setAuthInitialTab] = useState<'demo' | 'login'>(() => {
+    try {
+      const urlParams = new URLSearchParams(window.location.search);
+      return urlParams.get('tab') === 'login' ? 'login' : 'demo';
+    } catch {
+      return 'demo';
+    }
   });
 
   // App navigation state
@@ -146,6 +184,96 @@ export default function App() {
       console.warn('URL parsing notice:', err);
     }
   }, []);
+
+  // Auth & Demo Handlers
+  const handleLogin = (user: AuthUser) => {
+    setCurrentUser(user);
+    try {
+      localStorage.setItem('stitchmate_current_user', JSON.stringify(user));
+    } catch (e) {
+      console.warn('Could not persist auth user to localStorage:', e);
+    }
+
+    if (user.role === 'customer') {
+      setIsCustomerPortalActive(true);
+      setPortalInitialCode(user.customerTrackingCode || 'STM-8491');
+    } else if (user.role === 'tailor') {
+      setIsCustomerPortalActive(false);
+      setCurrentTab('workshop');
+    } else if (user.role === 'manager') {
+      setIsCustomerPortalActive(false);
+      setCurrentTab('orders');
+    } else {
+      setIsCustomerPortalActive(false);
+      setCurrentTab('dashboard');
+    }
+  };
+
+  const handleSwitchRole = (role: 'admin' | 'manager' | 'tailor' | 'customer') => {
+    if (role === 'admin') {
+      handleLogin({
+        id: 'demo_admin',
+        name: 'Devendra Kumar (Proprietor)',
+        email: 'admin@deinrimapp.in',
+        role: 'admin',
+        roleTitle: 'Boutique Administrator & Owner',
+        isDemoUser: true,
+      });
+    } else if (role === 'manager') {
+      handleLogin({
+        id: 'demo_manager',
+        name: 'Priya Sharma (Store Head)',
+        email: 'manager@deinrimapp.in',
+        role: 'manager',
+        roleTitle: 'Boutique Store Manager',
+        isDemoUser: true,
+      });
+    } else if (role === 'tailor') {
+      handleLogin({
+        id: 'demo_tailor',
+        name: 'Master Rafiq (Head Cutter)',
+        email: 'tailor@deinrimapp.in',
+        role: 'tailor',
+        roleTitle: 'Master Tailor & Workshop Cutter',
+        isDemoUser: true,
+      });
+    } else if (role === 'customer') {
+      handleLogin({
+        id: 'demo_customer',
+        name: 'Vikramaditya Singhania',
+        email: 'singhania.v@example.com',
+        role: 'customer',
+        roleTitle: 'Customer Live Portal Tracker',
+        isDemoUser: true,
+        customerTrackingCode: 'STM-8491',
+      });
+    }
+  };
+
+  const handleLogout = () => {
+    setCurrentUser(null);
+    try {
+      localStorage.removeItem('stitchmate_current_user');
+      const url = new URL(window.location.href);
+      url.searchParams.set('tab', 'demo');
+      window.history.pushState({}, '', url.toString());
+    } catch (e) {
+      console.warn('URL update notice:', e);
+    }
+    setAuthInitialTab('demo');
+  };
+
+  const handleResetDemoData = () => {
+    StorageService.resetAllToDefaults();
+    setBusinesses(StorageService.getBusinesses());
+    setCurrentBusiness(StorageService.getCurrentBusiness());
+    setOrders(StorageService.getOrders());
+    setCustomers(StorageService.getCustomers());
+    setMeasurements(StorageService.getMeasurements());
+    setFabrics(StorageService.getFabrics());
+    setHaberdashery(StorageService.getHaberdashery());
+    setTailors(StorageService.getTailors());
+  };
 
   // Business Switcher
   const handleSelectBusiness = (bizId: string) => {
@@ -357,12 +485,34 @@ export default function App() {
     setPrintJobCardOrder(dummyOrder);
   };
 
+  // If unauthenticated or accessing live demo auth screen
+  if (!currentUser) {
+    return (
+      <BoutiqueAuthPage
+        initialTab={authInitialTab}
+        onLogin={handleLogin}
+        onResetData={handleResetDemoData}
+        business={currentBusiness || businesses[0] || StorageService.getCurrentBusiness()!}
+        darkMode={darkMode}
+        setDarkMode={setDarkMode}
+      />
+    );
+  }
+
   if (!currentBusiness) {
     return <div className="p-8 text-center text-sm text-slate-500">Loading atelier console...</div>;
   }
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors">
+      {/* Top Live Demo Bar */}
+      <LiveDemoBar
+        currentUser={currentUser}
+        onSwitchRole={handleSwitchRole}
+        onResetData={handleResetDemoData}
+        onLogout={handleLogout}
+      />
+
       {/* Left Sidebar Panel */}
       <Sidebar
         currentTab={currentTab}
@@ -379,6 +529,8 @@ export default function App() {
         mobileOpen={mobileSidebarOpen}
         setMobileOpen={setMobileSidebarOpen}
         orderCount={orders.length}
+        currentUser={currentUser}
+        onOpenAuthDemo={handleLogout}
       />
 
       {/* Main Workspace Frame (offset by left sidebar) */}
@@ -393,6 +545,8 @@ export default function App() {
           darkMode={darkMode}
           setDarkMode={setDarkMode}
           onToggleMobileMenu={() => setMobileSidebarOpen(true)}
+          currentUser={currentUser}
+          onOpenAuthDemo={handleLogout}
         />
 
         {/* Main Viewport Container */}
