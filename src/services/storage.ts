@@ -61,6 +61,16 @@ async function apiPost(endpoint: string, data: any) {
   }
 }
 
+async function apiDelete(endpoint: string) {
+  try {
+    await fetch(endpoint, {
+      method: 'DELETE',
+    });
+  } catch (err) {
+    console.warn(`Background API delete ${endpoint} failed, handled locally:`, err);
+  }
+}
+
 export const StorageService = {
   // Sync remote PostgreSQL database data into client cache
   async syncFromBackend(): Promise<{
@@ -155,6 +165,11 @@ export const StorageService = {
     setStorageItem(STORAGE_KEYS.CUSTOMERS, list);
     apiPost('/api/customers', customer);
   },
+  deleteCustomer(id: string): void {
+    const list = this.getCustomers().filter((c) => c.id !== id);
+    setStorageItem(STORAGE_KEYS.CUSTOMERS, list);
+    apiDelete(`/api/customers/${id}`);
+  },
 
   // Measurements
   getMeasurements(): MeasurementProfile[] {
@@ -173,6 +188,11 @@ export const StorageService = {
     }
     setStorageItem(STORAGE_KEYS.MEASUREMENTS, list);
     apiPost('/api/measurements', profile);
+  },
+  deleteMeasurement(id: string): void {
+    const list = this.getMeasurements().filter((m) => m.id !== id);
+    setStorageItem(STORAGE_KEYS.MEASUREMENTS, list);
+    apiDelete(`/api/measurements/${id}`);
   },
 
   // Orders
@@ -201,6 +221,15 @@ export const StorageService = {
 
     // Update customer stats
     this.recalculateCustomerStats(order.customerId);
+  },
+  deleteOrder(id: string): void {
+    const order = this.getOrderById(id);
+    const list = this.getOrders().filter((o) => o.id !== id);
+    setStorageItem(STORAGE_KEYS.ORDERS, list);
+    apiDelete(`/api/orders/${id}`);
+    if (order) {
+      this.recalculateCustomerStats(order.customerId);
+    }
   },
   updateOrderStatus(orderId: string, status: ProductionStatus): Order | undefined {
     const list = this.getOrders();
@@ -283,6 +312,11 @@ export const StorageService = {
     setStorageItem(STORAGE_KEYS.FABRICS, list);
     apiPost('/api/fabrics', fabric);
   },
+  deleteFabric(id: string): void {
+    const list = this.getFabrics().filter((f) => f.id !== id);
+    setStorageItem(STORAGE_KEYS.FABRICS, list);
+    apiDelete(`/api/fabrics/${id}`);
+  },
   getHaberdashery(): HaberdasheryItem[] {
     return getStorageItem<HaberdasheryItem[]>(STORAGE_KEYS.HABERDASHERY, INITIAL_HABERDASHERY);
   },
@@ -297,7 +331,11 @@ export const StorageService = {
     setStorageItem(STORAGE_KEYS.HABERDASHERY, list);
     apiPost('/api/haberdashery', item);
   },
-
+  deleteHaberdashery(id: string): void {
+    const list = this.getHaberdashery().filter((h) => h.id !== id);
+    setStorageItem(STORAGE_KEYS.HABERDASHERY, list);
+    apiDelete(`/api/haberdashery/${id}`);
+  },
   // Tailors
   getTailors(): TailorStaff[] {
     return getStorageItem<TailorStaff[]>(STORAGE_KEYS.TAILORS, INITIAL_TAILOR_STAFF);
@@ -312,6 +350,11 @@ export const StorageService = {
     }
     setStorageItem(STORAGE_KEYS.TAILORS, list);
     apiPost('/api/tailors', tailor);
+  },
+  deleteTailor(id: string): void {
+    const list = this.getTailors().filter((t) => t.id !== id);
+    setStorageItem(STORAGE_KEYS.TAILORS, list);
+    apiDelete(`/api/tailors/${id}`);
   },
 
   // Reset to demo defaults

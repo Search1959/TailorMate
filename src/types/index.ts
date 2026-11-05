@@ -51,6 +51,7 @@ export interface Customer {
   whatsapp: string;
   email: string;
   address: string;
+  city?: string;
   avatarUrl?: string;
   birthDate?: string;
   anniversaryDate?: string;
@@ -122,6 +123,7 @@ export interface OrderItem {
   unitFabricPrice: number;
   subtotal: number;
   referenceImageUrl?: string;
+  specialInstructions?: string;
 }
 
 export interface PaymentRecord {
@@ -174,43 +176,56 @@ export interface Order {
 export interface Fabric {
   id: string;
   code: string; // e.g. "FAB-WOL-102"
+  fabricCode?: string;
   name: string;
   category: 'wool' | 'cotton' | 'linen' | 'silk' | 'tweed' | 'velvet' | 'brocade';
+  type?: string;
+  brand?: string;
   colorName: string;
   colorHex: string;
+  color?: string;
   pattern: 'solid' | 'pinstripe' | 'glen_plaid' | 'herringbone' | 'jacquard' | 'check';
   millOrBrand: string;
+  mill?: string;
+  composition?: string;
   pricePerMeter: number;
   costPerMeter: number;
   totalStockMeters: number;
   reservedMeters: number;
   minStockThreshold: number;
+  rollLocation?: string;
   imageUrl?: string;
   supplier: string;
+  supplierName?: string;
 }
 
 export interface HaberdasheryItem {
   id: string;
   code: string;
+  sku?: string;
   name: string;
   category: 'buttons' | 'zippers' | 'linings' | 'threads' | 'canvas' | 'shoulder_pads';
   stockQty: number;
   unit: string;
   minThreshold: number;
   unitCost: number;
+  costPerUnit?: number;
 }
 
 export interface TailorStaff {
   id: string;
   name: string;
   phone: string;
-  role: 'master_cutter' | 'coat_tailor' | 'trouser_tailor' | 'shirt_specialist' | 'ladies_couturier' | 'finisher_presser';
+  email?: string;
+  role: 'master_cutter' | 'coat_tailor' | 'trouser_tailor' | 'shirt_specialist' | 'ladies_couturier' | 'finisher_presser' | 'master_tailor' | 'cutter' | 'coat_maker' | 'trouser_maker' | 'finisher' | 'alteration_specialist';
   ratePerPiece: number;
   activeOrdersCount: number;
   completedThisMonth: number;
   rating: number;
-  status: 'available' | 'busy' | 'on_leave';
+  status: 'available' | 'busy' | 'on_leave' | 'active' | 'inactive';
   avatarUrl?: string;
+  specialization?: string[];
+  emergencyContact?: string;
 }
 
 export interface WhatsAppTemplate {

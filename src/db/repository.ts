@@ -111,7 +111,7 @@ export async function seedInitialDataIfEmpty() {
           stockQty: h.stockQty.toString(),
           unit: h.unit,
           minThreshold: h.minThreshold.toString(),
-          unitCost: h.unitCost.toString(),
+          unitCost: (h.unitCost ?? 5).toString(),
         }).onConflictDoNothing();
       }
 
@@ -516,22 +516,24 @@ export async function getHaberdashery(): Promise<HaberdasheryItem[]> {
 
 export async function saveHaberdashery(h: HaberdasheryItem): Promise<void> {
   try {
+    const code = h.code || h.sku || `HAB-${Date.now()}`;
+    const unitCost = (h.unitCost ?? h.costPerUnit ?? 5).toString();
     await db.insert(haberdashery).values({
       id: h.id,
-      code: h.code,
+      code,
       name: h.name,
       category: h.category,
       stockQty: h.stockQty.toString(),
       unit: h.unit,
       minThreshold: h.minThreshold.toString(),
-      unitCost: h.unitCost.toString(),
+      unitCost,
     }).onConflictDoUpdate({
       target: haberdashery.id,
       set: {
         name: h.name,
         stockQty: h.stockQty.toString(),
         minThreshold: h.minThreshold.toString(),
-        unitCost: h.unitCost.toString(),
+        unitCost,
       },
     });
   } catch (error) {
@@ -592,3 +594,59 @@ export async function saveTailorStaff(t: TailorStaff): Promise<void> {
     throw new Error('Failed to save tailor staff', { cause: error });
   }
 }
+
+// Delete Operations
+export async function deleteCustomer(id: string): Promise<void> {
+  try {
+    await db.delete(customers).where(eq(customers.id, id));
+  } catch (error) {
+    console.error('Error deleting customer:', error);
+    throw new Error('Failed to delete customer', { cause: error });
+  }
+}
+
+export async function deleteOrder(id: string): Promise<void> {
+  try {
+    await db.delete(orders).where(eq(orders.id, id));
+  } catch (error) {
+    console.error('Error deleting order:', error);
+    throw new Error('Failed to delete order', { cause: error });
+  }
+}
+
+export async function deleteMeasurement(id: string): Promise<void> {
+  try {
+    await db.delete(measurementProfiles).where(eq(measurementProfiles.id, id));
+  } catch (error) {
+    console.error('Error deleting measurement:', error);
+    throw new Error('Failed to delete measurement', { cause: error });
+  }
+}
+
+export async function deleteFabric(id: string): Promise<void> {
+  try {
+    await db.delete(fabrics).where(eq(fabrics.id, id));
+  } catch (error) {
+    console.error('Error deleting fabric:', error);
+    throw new Error('Failed to delete fabric', { cause: error });
+  }
+}
+
+export async function deleteHaberdashery(id: string): Promise<void> {
+  try {
+    await db.delete(haberdashery).where(eq(haberdashery.id, id));
+  } catch (error) {
+    console.error('Error deleting haberdashery:', error);
+    throw new Error('Failed to delete haberdashery', { cause: error });
+  }
+}
+
+export async function deleteTailorStaff(id: string): Promise<void> {
+  try {
+    await db.delete(tailorStaff).where(eq(tailorStaff.id, id));
+  } catch (error) {
+    console.error('Error deleting tailor staff:', error);
+    throw new Error('Failed to delete tailor staff', { cause: error });
+  }
+}
+

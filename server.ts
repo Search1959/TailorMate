@@ -17,6 +17,12 @@ import {
   getTailorStaff,
   saveTailorStaff,
   seedInitialDataIfEmpty,
+  deleteCustomer,
+  deleteOrder,
+  deleteMeasurement,
+  deleteFabric,
+  deleteHaberdashery,
+  deleteTailorStaff,
 } from './src/db/repository.ts';
 import { optionalAuth, requireAuth, AuthRequest } from './src/middleware/auth.ts';
 import { db } from './src/db/index.ts';
@@ -182,6 +188,67 @@ app.post('/api/tailors', async (req, res) => {
   } catch (error: any) {
     console.error('Failed to save tailor staff:', error);
     res.status(500).json({ error: 'Failed to save tailor staff' });
+  }
+});
+
+// DELETE Routes
+app.delete('/api/customers/:id', async (req, res) => {
+  try {
+    await deleteCustomer(req.params.id);
+    res.json({ success: true, id: req.params.id });
+  } catch (error: any) {
+    console.error('Failed to delete customer:', error);
+    res.status(500).json({ error: 'Failed to delete customer' });
+  }
+});
+
+app.delete('/api/orders/:id', async (req, res) => {
+  try {
+    await deleteOrder(req.params.id);
+    res.json({ success: true, id: req.params.id });
+  } catch (error: any) {
+    console.error('Failed to delete order:', error);
+    res.status(500).json({ error: 'Failed to delete order' });
+  }
+});
+
+app.delete('/api/measurements/:id', async (req, res) => {
+  try {
+    await deleteMeasurement(req.params.id);
+    res.json({ success: true, id: req.params.id });
+  } catch (error: any) {
+    console.error('Failed to delete measurement:', error);
+    res.status(500).json({ error: 'Failed to delete measurement' });
+  }
+});
+
+app.delete('/api/fabrics/:id', async (req, res) => {
+  try {
+    await deleteFabric(req.params.id);
+    res.json({ success: true, id: req.params.id });
+  } catch (error: any) {
+    console.error('Failed to delete fabric:', error);
+    res.status(500).json({ error: 'Failed to delete fabric' });
+  }
+});
+
+app.delete('/api/haberdashery/:id', async (req, res) => {
+  try {
+    await deleteHaberdashery(req.params.id);
+    res.json({ success: true, id: req.params.id });
+  } catch (error: any) {
+    console.error('Failed to delete haberdashery:', error);
+    res.status(500).json({ error: 'Failed to delete haberdashery' });
+  }
+});
+
+app.delete('/api/tailors/:id', async (req, res) => {
+  try {
+    await deleteTailorStaff(req.params.id);
+    res.json({ success: true, id: req.params.id });
+  } catch (error: any) {
+    console.error('Failed to delete tailor:', error);
+    res.status(500).json({ error: 'Failed to delete tailor' });
   }
 });
 
