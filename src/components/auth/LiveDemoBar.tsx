@@ -17,6 +17,7 @@ interface LiveDemoBarProps {
   onSwitchRole: (role: 'admin' | 'manager' | 'tailor' | 'customer') => void;
   onResetData: () => void;
   onLogout: () => void;
+  onGoHome?: () => void;
 }
 
 export const LiveDemoBar: React.FC<LiveDemoBarProps> = ({
@@ -24,6 +25,7 @@ export const LiveDemoBar: React.FC<LiveDemoBarProps> = ({
   onSwitchRole,
   onResetData,
   onLogout,
+  onGoHome,
 }) => {
   const [isRoleDropdownOpen, setIsRoleDropdownOpen] = useState(false);
   const [resetSuccess, setResetSuccess] = useState(false);
@@ -167,6 +169,17 @@ export const LiveDemoBar: React.FC<LiveDemoBarProps> = ({
             <RotateCcw className={`w-3 h-3 ${resetSuccess ? 'animate-spin text-emerald-400' : 'text-slate-400'}`} />
             <span>{resetSuccess ? 'Data Reset!' : 'Reset Demo'}</span>
           </button>
+
+          {/* Marketing Home Button */}
+          {onGoHome && (
+            <button
+              onClick={onGoHome}
+              className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium bg-slate-800/80 hover:bg-slate-700 text-slate-200 border border-slate-700 transition-colors"
+              title="Return to Marketing Landing Page"
+            >
+              <span>← Home</span>
+            </button>
+          )}
 
           {/* Exit Demo / Sign Out */}
           <button

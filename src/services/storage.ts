@@ -146,6 +146,17 @@ export const StorageService = {
     const list = this.getBusinesses().map((b) => (b.id === updated.id ? updated : b));
     setStorageItem(STORAGE_KEYS.BUSINESSES, list);
   },
+  saveBusiness(business: BusinessProfile): void {
+    const list = this.getBusinesses();
+    const index = list.findIndex((b) => b.id === business.id);
+    if (index >= 0) {
+      list[index] = business;
+    } else {
+      list.unshift(business);
+    }
+    setStorageItem(STORAGE_KEYS.BUSINESSES, list);
+    apiPost('/api/businesses', business);
+  },
 
   // Customers
   getCustomers(): Customer[] {

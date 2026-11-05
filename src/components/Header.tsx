@@ -22,6 +22,7 @@ interface HeaderProps {
   onToggleMobileMenu: () => void;
   currentUser?: AuthUser | null;
   onOpenAuthDemo?: () => void;
+  onGoHome?: () => void;
 }
 
 const TAB_TITLES: Record<string, string> = {
@@ -45,6 +46,7 @@ export const Header: React.FC<HeaderProps> = ({
   onToggleMobileMenu,
   currentUser,
   onOpenAuthDemo,
+  onGoHome,
 }) => {
   const pageTitle = isCustomerPortalActive
     ? 'Customer Tracking Portal'
@@ -94,6 +96,17 @@ export const Header: React.FC<HeaderProps> = ({
               </div>
             ) : (
               <>
+                {/* Marketing Home Button */}
+                {onGoHome && (
+                  <button
+                    onClick={onGoHome}
+                    className="hidden lg:flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg transition-colors whitespace-nowrap"
+                    title="Visit Marketing Home Page"
+                  >
+                    <span>Marketing Home</span>
+                  </button>
+                )}
+
                 {/* Deinrim Demo / Auth quick button */}
                 {onOpenAuthDemo && (
                   <button

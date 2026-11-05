@@ -38,6 +38,7 @@ interface SidebarProps {
   orderCount?: number;
   currentUser?: AuthUser | null;
   onOpenAuthDemo?: () => void;
+  onGoHome?: () => void;
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({
@@ -57,6 +58,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   orderCount = 8,
   currentUser,
   onOpenAuthDemo,
+  onGoHome,
 }) => {
   const navItems = [
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
@@ -221,6 +223,20 @@ export const Sidebar: React.FC<SidebarProps> = ({
               {isCustomerPortalActive ? 'Active' : 'View'}
             </span>
           </button>
+
+          {/* Marketing Home Link */}
+          {onGoHome && (
+            <button
+              onClick={() => {
+                onGoHome();
+                setMobileOpen(false);
+              }}
+              className="w-full flex items-center justify-between px-3 py-1.5 text-xs font-medium text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+            >
+              <span>← Marketing Home</span>
+              <span className="text-[10px] text-amber-500 font-semibold">Home</span>
+            </button>
+          )}
 
           {/* Branch Switcher */}
           <div className="pt-1">

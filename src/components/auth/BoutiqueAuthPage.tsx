@@ -32,6 +32,8 @@ interface BoutiqueAuthPageProps {
   business: BusinessProfile;
   darkMode: boolean;
   setDarkMode: (val: boolean) => void;
+  onOpenSignup?: () => void;
+  onBackToHome?: () => void;
 }
 
 export const BoutiqueAuthPage: React.FC<BoutiqueAuthPageProps> = ({
@@ -41,6 +43,8 @@ export const BoutiqueAuthPage: React.FC<BoutiqueAuthPageProps> = ({
   business,
   darkMode,
   setDarkMode,
+  onOpenSignup,
+  onBackToHome,
 }) => {
   const [activeTab, setActiveTab] = useState<'demo' | 'login'>(initialTab);
 
@@ -179,9 +183,27 @@ export const BoutiqueAuthPage: React.FC<BoutiqueAuthPageProps> = ({
             </div>
           </div>
 
-          {/* Right Header Status & Theme */}
+          {/* Right Header Status, Home & Theme */}
           <div className="flex items-center gap-3">
-            <div className="hidden md:flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 text-[11px] font-medium">
+            {onBackToHome && (
+              <button
+                onClick={onBackToHome}
+                className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-slate-300 hover:text-white bg-slate-900 hover:bg-slate-800 border border-slate-800 rounded-lg transition-colors"
+              >
+                <span>← Marketing Home</span>
+              </button>
+            )}
+
+            {onOpenSignup && (
+              <button
+                onClick={onOpenSignup}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-slate-950 bg-amber-400 hover:bg-amber-300 rounded-lg transition-colors shadow-xs"
+              >
+                <span>Free Trial Sign Up</span>
+              </button>
+            )}
+
+            <div className="hidden lg:flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 text-[11px] font-medium">
               <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
               <span>Cloud SQL Database Online</span>
             </div>

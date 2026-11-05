@@ -27,6 +27,8 @@ import { ConfirmDeleteModal } from './components/modals/ConfirmDeleteModal';
 import { StorageService } from './services/storage';
 import { BoutiqueAuthPage } from './components/auth/BoutiqueAuthPage';
 import { LiveDemoBar } from './components/auth/LiveDemoBar';
+import { MarketingHomePage } from './components/home/MarketingHomePage';
+import { UserSignupModal } from './components/home/UserSignupModal';
 import {
   AuthUser,
   BusinessProfile,
@@ -46,16 +48,27 @@ export default function App() {
     return localStorage.getItem('stitchmate_dark_mode') === 'true';
   });
 
+  // Top-level View Routing: 'home' (Marketing Landing) | 'auth' (Live Demo & Member Login) | 'app' (Atelier ERP Console)
+  const [currentView, setCurrentView] = useState<'home' | 'auth' | 'app'>(() => {
+    try {
+      const urlParams = new URLSearchParams(window.location.search);
+      if (urlParams.get('view') === 'app' || urlParams.get('portal') === 'true') {
+        return 'app';
+      }
+      if (urlParams.get('tab') === 'demo' || urlParams.get('r')?.includes('auth/login') || urlParams.get('view') === 'auth') {
+        return 'auth';
+      }
+    } catch {
+      // default
+    }
+    return 'home';
+  });
+
+  const [isSignupModalOpen, setIsSignupModalOpen] = useState(false);
+
   // Authentication & Demo Portal State (matches deinrimapp.in/boutique/index.php?r=auth/login&tab=demo)
   const [currentUser, setCurrentUser] = useState<AuthUser | null>(() => {
     try {
-      const urlParams = new URLSearchParams(window.location.search);
-      const tabParam = urlParams.get('tab');
-      const rParam = urlParams.get('r');
-      // If URL explicitly requests demo or login auth page, show auth page directly
-      if (tabParam === 'demo' || (rParam && rParam.includes('auth/login'))) {
-        return null;
-      }
       const saved = localStorage.getItem('stitchmate_current_user');
       if (saved) return JSON.parse(saved);
     } catch (e) {
@@ -261,6 +274,7 @@ export default function App() {
       console.warn('URL update notice:', e);
     }
     setAuthInitialTab('demo');
+    setCurrentView('auth');
   };
 
   const handleResetDemoData = () => {
@@ -485,17 +499,84 @@ export default function App() {
     setPrintJobCardOrder(dummyOrder);
   };
 
-  // If unauthenticated or accessing live demo auth screen
-  if (!currentUser) {
+  // 1. Marketing Home Page View (Home page for marketing with dual hero and dashboard slides)
+  if (currentView === 'home') {
     return (
-      <BoutiqueAuthPage
-        initialTab={authInitialTab}
-        onLogin={handleLogin}
-        onResetData={handleResetDemoData}
-        business={currentBusiness || businesses[0] || StorageService.getCurrentBusiness()!}
-        darkMode={darkMode}
-        setDarkMode={setDarkMode}
-      />
+      <>
+        <MarketingHomePage
+          onOpenDemo={(role) => {
+            if (role) {
+              handleSwitchRole(role);
+              setCurrentView('app');
+            } else {
+              setAuthInitialTab('demo');
+              setCurrentView('auth');
+            }
+          }}
+          onOpenLogin={() => {
+            setAuthInitialTab('login');
+            setCurrentView('auth');
+          }}
+          onOpenSignup={() => setIsSignupModalOpen(true)}
+          onEnterAppDirectly={() => setCurrentView('app')}
+          business={currentBusiness || businesses[0] || StorageService.getCurrentBusiness()!}
+          darkMode={darkMode}
+          setDarkMode={setDarkMode}
+        />
+
+        <UserSignupModal
+          isOpen={isSignupModalOpen}
+          onClose={() => setIsSignupModalOpen(false)}
+          onSignupSuccess={(user, newBiz) => {
+            setCurrentUser(user);
+            setCurrentBusiness(newBiz);
+            setBusinesses(StorageService.getBusinesses());
+            setCurrentView('app');
+            setCurrentTab('dashboard');
+          }}
+          onSwitchToLogin={() => {
+            setAuthInitialTab('login');
+            setCurrentView('auth');
+          }}
+        />
+      </>
+    );
+  }
+
+  // 2. Authentication & Live Demo Portal (matches deinrimapp.in/boutique/index.php?r=auth/login&tab=demo)
+  if (currentView === 'auth' || !currentUser) {
+    return (
+      <>
+        <BoutiqueAuthPage
+          initialTab={authInitialTab}
+          onLogin={(user) => {
+            handleLogin(user);
+            setCurrentView('app');
+          }}
+          onResetData={handleResetDemoData}
+          business={currentBusiness || businesses[0] || StorageService.getCurrentBusiness()!}
+          darkMode={darkMode}
+          setDarkMode={setDarkMode}
+          onOpenSignup={() => setIsSignupModalOpen(true)}
+          onBackToHome={() => setCurrentView('home')}
+        />
+
+        <UserSignupModal
+          isOpen={isSignupModalOpen}
+          onClose={() => setIsSignupModalOpen(false)}
+          onSignupSuccess={(user, newBiz) => {
+            setCurrentUser(user);
+            setCurrentBusiness(newBiz);
+            setBusinesses(StorageService.getBusinesses());
+            setCurrentView('app');
+            setCurrentTab('dashboard');
+          }}
+          onSwitchToLogin={() => {
+            setAuthInitialTab('login');
+            setCurrentView('auth');
+          }}
+        />
+      </>
     );
   }
 
@@ -511,6 +592,7 @@ export default function App() {
         onSwitchRole={handleSwitchRole}
         onResetData={handleResetDemoData}
         onLogout={handleLogout}
+        onGoHome={() => setCurrentView('home')}
       />
 
       {/* Left Sidebar Panel */}
@@ -531,6 +613,7 @@ export default function App() {
         orderCount={orders.length}
         currentUser={currentUser}
         onOpenAuthDemo={handleLogout}
+        onGoHome={() => setCurrentView('home')}
       />
 
       {/* Main Workspace Frame (offset by left sidebar) */}
@@ -547,6 +630,7 @@ export default function App() {
           onToggleMobileMenu={() => setMobileSidebarOpen(true)}
           currentUser={currentUser}
           onOpenAuthDemo={handleLogout}
+          onGoHome={() => setCurrentView('home')}
         />
 
         {/* Main Viewport Container */}
